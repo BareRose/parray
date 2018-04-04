@@ -54,16 +54,16 @@ parray returns:
     static struct NAME* FUNC##New () { \
         return (struct NAME*)parrayNew(); \
     } \
-    static size_t FUNC##Length (const struct NAME* parr) { \
+    static int FUNC##Length (const struct NAME* parr) { \
         return parrayLength((const struct parray*)parr); \
     } \
-    static size_t FUNC##Set (struct NAME* parr, size_t ind, TYPE* ele) { \
+    static int FUNC##Set (struct NAME* parr, int ind, TYPE* ele) { \
         return parraySet((struct parray*)parr, ind, (void*)ele); \
     } \
-    static size_t FUNC##IndexOf (const struct NAME* parr, TYPE* ele) { \
+    static int FUNC##IndexOf (const struct NAME* parr, TYPE* ele) { \
         return parrayIndexOf((const struct parray*)parr, (void*)ele); \
     } \
-    static TYPE* FUNC##Get (const struct NAME* parr, size_t ind) { \
+    static TYPE* FUNC##Get (const struct NAME* parr, int ind) { \
         return (TYPE*)parrayGet((const struct parray*)parr, ind); \
     } \
     static TYPE* FUNC##GetFirst (const struct NAME* parr) { \
@@ -78,7 +78,7 @@ parray returns:
     static void FUNC##Free (struct NAME* parr) { \
         parrayFree((struct parray*)parr); \
     } \
-    static size_t FUNC##Push (struct NAME* parr, TYPE* ele) { \
+    static int FUNC##Push (struct NAME* parr, TYPE* ele) { \
         return parrayPush((struct parray*)parr, (void*)ele); \
     } \
     static TYPE* FUNC##Pop (struct NAME* parr) { \
@@ -87,7 +87,7 @@ parray returns:
     static TYPE* FUNC##Dequeue (struct NAME* parr) { \
         return (TYPE*)parrayDequeue((struct parray*)parr); \
     } \
-    static size_t FUNC##FindIndex (const struct NAME* parr, int(*comp)(const void*, const TYPE**), const void* key) { \
+    static int FUNC##FindIndex (const struct NAME* parr, int(*comp)(const void*, const TYPE**), const void* key) { \
         return parrayFindIndex((const struct parray*)parr, (int(*)(const void*, const void**))comp, key); \
     } \
     static TYPE* FUNC##FindElement (const struct NAME* parr, int(*comp)(const void*, const TYPE**), const void* key) { \
@@ -99,46 +99,43 @@ parray returns:
     static void FUNC##SortStandard (struct NAME* parr, int(*comp)(const TYPE**, const TYPE**)) { \
         parraySortStandard((struct parray*)parr, (int(*)(const void**, const void**))comp); \
     } \
-    static size_t FUNC##Insert (struct NAME* parr, size_t ind, TYPE* ele) { \
+    static int FUNC##Insert (struct NAME* parr, int ind, TYPE* ele) { \
         return parrayInsert((struct parray*)parr, ind, (void*)ele); \
     } \
-    static TYPE* FUNC##Remove (struct NAME* parr, size_t ind) { \
+    static TYPE* FUNC##Remove (struct NAME* parr, int ind) { \
         return (TYPE*)parrayRemove((struct parray*)parr, ind); \
     } \
-    static TYPE* FUNC##Ditch (struct NAME* parr, size_t ind) { \
+    static TYPE* FUNC##Ditch (struct NAME* parr, int ind) { \
         return (TYPE*)parrayDitch((struct parray*)parr, ind); \
     } \
-    static size_t FUNC##Capacity (struct NAME* parr, size_t cap) { \
+    static int FUNC##Capacity (struct NAME* parr, int cap) { \
         return parrayCapacity((struct parray*)parr, cap); \
     }
-
-//constants
-#define PARRAY_ERROR (size_t)-1
 
 //structs
 struct parray; //forward declaration
 
 //function declarations
 PADEF struct parray* parrayNew();
-PADEF size_t parrayLength(const struct parray*);
-PADEF size_t parraySet(struct parray*, size_t, void*);
-PADEF size_t parrayIndexOf(const struct parray*, void*);
-PADEF void* parrayGet(const struct parray*, size_t);
+PADEF int parrayLength(const struct parray*);
+PADEF int parraySet(struct parray*, int, void*);
+PADEF int parrayIndexOf(const struct parray*, void*);
+PADEF void* parrayGet(const struct parray*, int);
 PADEF void* parrayGetFirst(const struct parray*);
 PADEF void* parrayGetLast(const struct parray*);
 PADEF void parrayClear(struct parray*);
 PADEF void parrayFree(struct parray*);
-PADEF size_t parrayPush(struct parray*, void*);
+PADEF int parrayPush(struct parray*, void*);
 PADEF void* parrayPop(struct parray*);
 PADEF void* parrayDequeue(struct parray*);
-PADEF size_t parrayFindIndex(const struct parray*, int(*)(const void*, const void**), const void*);
+PADEF int parrayFindIndex(const struct parray*, int(*)(const void*, const void**), const void*);
 PADEF void* parrayFindElement(const struct parray*, int(*)(const void*, const void**), const void*);
 PADEF void parraySortInsert(struct parray*, int(*)(const void**, const void**));
 PADEF void parraySortStandard(struct parray*, int(*)(const void**, const void**));
-PADEF size_t parrayInsert(struct parray*, size_t, void*);
-PADEF void* parrayRemove(struct parray*, size_t);
-PADEF void* parrayDitch(struct parray*, size_t);
-PADEF size_t parrayCapacity(struct parray*, size_t);
+PADEF int parrayInsert(struct parray*, int, void*);
+PADEF void* parrayRemove(struct parray*, int);
+PADEF void* parrayDitch(struct parray*, int);
+PADEF int parrayCapacity(struct parray*, int);
 
 //implementation section
 #ifdef PARRAY_IMPLEMENTATION
@@ -149,9 +146,9 @@ PADEF size_t parrayCapacity(struct parray*, size_t);
 
 //structs
 struct parray {
-    size_t offset;
-    size_t length;
-    size_t capacity;
+    int offset;
+    int length;
+    int capacity;
     void** data;
 };
 
@@ -160,26 +157,26 @@ PADEF struct parray* parrayNew () {
     //creates a new parray instance and returns a pointer to it
     return calloc(1, sizeof(struct parray));
 }
-PADEF size_t parrayLength (const struct parray* parr) {
+PADEF int parrayLength (const struct parray* parr) {
     //returns the current number of elements in the given parray
     return parr->length;
 }
-PADEF size_t parraySet (struct parray* parr, size_t ind, void* ele) {
+PADEF int parraySet (struct parray* parr, int ind, void* ele) {
     //overwrites the element at given index in given parray with given value
-    //returns the index the value was placed at, or PARRAY_ERROR on failure
-    if (ind >= parr->length) return PARRAY_ERROR;
+    //returns the index the value was placed at, or -1 on failure
+    if ((ind < 0)||(ind >= parr->length)) return -1;
     parr->data[parr->offset+ind] = ele;
     return ind;
 }
-PADEF size_t parrayIndexOf (const struct parray* parr, void* ele) {
-    //returns the index of given element in given parray, PARRAY_ERROR if not found
-    for (size_t i = 0; i < parr->length; i++)
+PADEF int parrayIndexOf (const struct parray* parr, void* ele) {
+    //returns the index of given element in given parray, -1 if not found
+    for (int i = 0; i < parr->length; i++)
         if (parr->data[parr->offset+i] == ele) return i;
-    return PARRAY_ERROR;
+    return -1;
 }
-PADEF void* parrayGet (const struct parray* parr, size_t ind) {
+PADEF void* parrayGet (const struct parray* parr, int ind) {
     //returns the element at the given index in given parray, or NULL if OOB
-    if (ind >= parr->length) return NULL;
+    if ((ind < 0)||(ind >= parr->length)) return NULL;
     return parr->data[parr->offset+ind];
 }
 PADEF void* parrayGetFirst (const struct parray* parr) {
@@ -202,14 +199,14 @@ PADEF void parrayFree (struct parray* parr) {
 }
 
 //stack-like functions
-PADEF size_t parrayPush (struct parray* parr, void* ele) {
+PADEF int parrayPush (struct parray* parr, void* ele) {
     //appends the given element to the end of the given parray (growing it if needed)
-    //returns the index the element was placed at, or PARRAY_ERROR on failure
+    //returns the index the element was placed at, or -1 on failure
     if (!parr->capacity) {
         //allocate initial capacity of 8 elements
         parr->data = malloc(sizeof(parr->data[0])*8);
         //check for malloc failure
-        if (!parr->data) return PARRAY_ERROR;
+        if (!parr->data) return -1;
         //update allocated capacity
         parr->capacity = 8;
     }
@@ -222,7 +219,7 @@ PADEF size_t parrayPush (struct parray* parr, void* ele) {
             //double the available capacity by reallocation
             void** ndat = realloc(parr->data, sizeof(parr->data[0])*(parr->capacity*2));
             //check for realloc failure
-            if (!ndat) return PARRAY_ERROR;
+            if (!ndat) return -1;
             //update allocated capacity
             parr->capacity *= 2;
             parr->data = ndat;
@@ -246,11 +243,11 @@ PADEF void* parrayDequeue (struct parray* parr) {
 }
 
 //sort/search functions
-PADEF size_t parrayFindIndex (const struct parray* parr, int(*comp)(const void*, const void**), const void* key) {
+PADEF int parrayFindIndex (const struct parray* parr, int(*comp)(const void*, const void**), const void* key) {
     //returns the index of an element that evaluates as equal to given value according to given function
     //parray must be sorted for this function to work correctly, otherwise the result is undefined
     void** res = bsearch(key, &parr->data[parr->offset], parr->length, sizeof(parr->data[0]), (int(*)(const void*, const void*))comp);
-    if (!res) return PARRAY_ERROR; //element not found
+    if (!res) return -1; //element not found
     return (res - &parr->data[parr->offset])/(sizeof(parr->data[0]));
 }
 PADEF void* parrayFindElement (const struct parray* parr, int(*comp)(const void*, const void**), const void* key) {
@@ -264,8 +261,8 @@ PADEF void parraySortInsert (struct parray* parr, int(*comp)(const void**, const
     //insertion sorts the elements in the given parray according to given comparison function
     //comparison function should return 1 if first argument is greater than second argument
     //0 if it is equal, and -1 if it is smaller, parray will be sorted smallest to greatest
-    for (size_t j = 1; j < parr->length; j++)
-        for (size_t i = parr->offset+j; (i > parr->offset)&&(comp((const void**)&parr->data[i-1], (const void**)&parr->data[i]) > 0); i--) {
+    for (int j = 1; j < parr->length; j++)
+        for (int i = parr->offset+j; (i > parr->offset)&&(comp((const void**)&parr->data[i-1], (const void**)&parr->data[i]) > 0); i--) {
             void* temp = parr->data[i];
             parr->data[i] = parr->data[i-1];
             parr->data[i-1] = temp;
@@ -277,10 +274,10 @@ PADEF void parraySortStandard (struct parray* parr, int(*comp)(const void**, con
 }
 
 //insert/remove functions
-PADEF size_t parrayInsert (struct parray* parr, size_t ind, void* ele) {
+PADEF int parrayInsert (struct parray* parr, int ind, void* ele) {
     //inserts the given element at the given index in given parray, shifting other elements forward
-    //returns the index the element was placed at, or PARRAY_ERROR on failure
-    if (ind >= parr->length) return PARRAY_ERROR;
+    //returns the index the element was placed at, or -1 on failure
+    if ((ind < 0)||(ind >= parr->length)) return -1;
     if (parr->offset+parr->length == parr->capacity)
         if (parr->offset >= parr->length) {
             //double the available capacity by offset reset
@@ -290,7 +287,7 @@ PADEF size_t parrayInsert (struct parray* parr, size_t ind, void* ele) {
             //double the available capacity by reallocation
             void** ndat = realloc(parr->data, sizeof(parr->data[0])*(parr->capacity*2));
             //check for realloc failure
-            if (!ndat) return PARRAY_ERROR;
+            if (!ndat) return -1;
             //update allocated capacity
             parr->capacity *= 2;
             parr->data = ndat;
@@ -299,35 +296,35 @@ PADEF size_t parrayInsert (struct parray* parr, size_t ind, void* ele) {
     parr->data[parr->offset+ind] = ele; parr->length++;
     return ind;
 }
-PADEF void* parrayRemove (struct parray* parr, size_t ind) {
+PADEF void* parrayRemove (struct parray* parr, int ind) {
     //removes and returns the element at given index while maintaining order of remaining elements
     //returns NULL if given index is outside the bounds of the parray
-    if (ind >= parr->length) return NULL;
+    if ((ind < 0)||(ind >= parr->length)) return NULL;
     void* ele = parr->data[parr->offset+ind]; parr->length--;
     memmove(&parr->data[parr->offset+ind], &parr->data[parr->offset+ind+1], sizeof(parr->data[0])*(parr->length-ind));
     return ele;
 }
-PADEF void* parrayDitch (struct parray* parr, size_t ind) {
+PADEF void* parrayDitch (struct parray* parr, int ind) {
     //faster alternative to parrayRemove that doesn't maintain order of remaining elements
-    if (ind >= parr->length) return NULL;
+    if ((ind < 0)||(ind >= parr->length)) return NULL;
     void* ele = parr->data[parr->offset+ind]; parr->data[parr->offset+ind] = parrayPop(parr);
     return ele;
 }
 
 //memory-related functions
-PADEF size_t parrayCapacity (struct parray* parr, size_t cap) {
+PADEF int parrayCapacity (struct parray* parr, int cap) {
     //adjusts the internal capacity of the given parray to most closely match the given number of elements
-    //returns the capacity after resizing, which may not match what was requested, or PARRAY_ERROR on failure
+    //returns the capacity after resizing, which may not match what was requested, or -1 on failure
     if (cap < parr->length) cap = parr->length;
     if (parr->offset) {
-        memmove(&parr->data[0], &parr->data[parr->offset], parr->length);
+        memmove(&parr->data[0], &parr->data[parr->offset], sizeof(parr->data[0])*parr->length);
         parr->offset = 0;
     }
     if (cap != parr->capacity) {
         //adjust available capacity by reallocation
         void** ndat = realloc(parr->data, sizeof(parr->data[0])*cap);
         //check for realloc failure
-        if (!ndat) return PARRAY_ERROR;
+        if (!ndat) return -1;
         //update allocated capacity
         parr->capacity = cap;
         parr->data = ndat;
