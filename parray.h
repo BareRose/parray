@@ -248,7 +248,7 @@ PADEF int parrayFindIndex (const struct parray* parr, int(*comp)(const void*, co
     //parray must be sorted for this function to work correctly, otherwise the result is undefined
     void** res = bsearch(key, &parr->data[parr->offset], parr->length, sizeof(parr->data[0]), (int(*)(const void*, const void*))comp);
     if (!res) return -1; //element not found
-    return (res - &parr->data[parr->offset])/(sizeof(parr->data[0]));
+    return res - &parr->data[parr->offset];
 }
 PADEF void* parrayFindElement (const struct parray* parr, int(*comp)(const void*, const void**), const void* key) {
     //returns an element that evaluates as equal to given value according to given comparison function
