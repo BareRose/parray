@@ -217,6 +217,14 @@ PADEF void parrayFree (struct parray* parr) {
 
 //stack-like functions
 PADEF int parrayPush (struct parray* parr, void* ele) {
+    if (!parr->capacity) {
+        //allocate initial capacity of 1 element
+        parr->data = malloc(sizeof(parr->data[0]));
+        //check for malloc failure
+        if (!parr->data) return -1;
+        //update allocated capacity
+        parr->capacity = 1;
+    }
     if (parr->offset+parr->length == parr->capacity)
         if (parr->offset >= parr->length) {
             //double the available capacity by offset reset
@@ -224,7 +232,7 @@ PADEF int parrayPush (struct parray* parr, void* ele) {
             parr->offset = 0;
         } else {
             //double the available capacity by reallocation
-            void** ndat = realloc(parr->data, sizeof(parr->data[0])*(parr->capacity ? parr->capacity*2 : 1));
+            void** ndat = realloc(parr->data, sizeof(parr->data[0])*(parr->capacity*2));
             //check for realloc failure
             if (!ndat) return -1;
             //update allocated capacity
