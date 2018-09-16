@@ -16,6 +16,14 @@ parray supports the following three configurations:
 #define PARRAY_STATIC
     Defines all parray functions as static, useful if parray is only used in a single compilation unit.
 
+parray supports the following additional options:
+#define PARRAY_ZALLOC(S)
+    Overrides the zalloc function used by parray with your own. This is calloc but with just 1 argument.
+#define PARRAY_REALLOC(P, S)
+    Overrides the realloc function used by parray with your own. Defaults to the standard realloc.
+#define PARRAY_FREE(P)
+    Overrides the free function used by parray with your own. Defaults to the standard free.
+
 parray usage:
     A parray is a dynamic array of void pointers with a multi-purpose interface, thus allowing it to act as just a dynamic array,
     a stack, a queue, a binary-searchable list, or even all of the above at once. What data structure it acts as depends on the
@@ -34,7 +42,7 @@ parray returns:
     recommended. If you wish to store NULL values in your parray you will have to do your own bounds checking to avoid this problem.
 */
 
-//include only once
+//header section
 #ifndef PARRAY_H
 #define PARRAY_H
 
@@ -164,8 +172,25 @@ PADEF int parrayCapacity(struct parray*, int);
     //adjusts the internal capacity of the given parray to most closely match the given number of elements
     //returns the capacity after resizing, which may not match what was requested, or -1 on failure
 
+#endif //PARRAY_H
+
 //implementation section
 #ifdef PARRAY_IMPLEMENTATION
+#undef PARRAY_IMPLEMENTATION
+
+//macros
+#ifndef PARRAY_ZALLOC
+    #include <stdlib.h> //calloc
+    #define PARRAY_ZALLOC(S) calloc(1, S)
+#endif
+#ifndef PARRAY_REALLOC
+    #include <stdlib.h> //realloc
+    #define PARRAY_REALLOC(P, S) realloc(P, S)
+#endif
+#ifndef PARRAY_FREE
+    #include <stdlib.h> //free
+    #define PARRAY_FREE(P) free(P)
+#endif
 
 //includes
 #include <stdlib.h> //memory allocation
@@ -181,7 +206,7 @@ struct parray {
 
 //general functions
 PADEF struct parray* parrayNew () {
-    return calloc(1, sizeof(struct parray));
+    return PARRAY_ZALLOC(sizeof(struct parray));
 }
 PADEF int parrayLength (const struct parray* parr) {
     return parr->length;
@@ -212,14 +237,14 @@ PADEF void parrayClear (struct parray* parr) {
     parr->offset = parr->length = 0;
 }
 PADEF void parrayFree (struct parray* parr) {
-    free(parr->data); free(parr);
+    PARRAY_FREE(parr->data); PARRAY_FREE(parr);
 }
 
 //stack-like functions
 PADEF int parrayPush (struct parray* parr, void* ele) {
     if (!parr->capacity) {
         //allocate initial capacity of 1 element
-        parr->data = malloc(sizeof(parr->data[0]));
+        parr->data = PARRAY_REALLOC(parr->data, sizeof(parr->data[0]));
         //check for malloc failure
         if (!parr->data) return -1;
         //update allocated capacity
@@ -232,7 +257,7 @@ PADEF int parrayPush (struct parray* parr, void* ele) {
             parr->offset = 0;
         } else {
             //double the available capacity by reallocation
-            void** ndat = realloc(parr->data, sizeof(parr->data[0])*(parr->capacity*2));
+            void** ndat = PARRAY_REALLOC(parr->data, sizeof(parr->data[0])*(parr->capacity*2));
             //check for realloc failure
             if (!ndat) return -1;
             //update allocated capacity
@@ -288,7 +313,7 @@ PADEF int parrayInsert (struct parray* parr, int ind, void* ele) {
             parr->offset = 0;
         } else {
             //double the available capacity by reallocation
-            void** ndat = realloc(parr->data, sizeof(parr->data[0])*(parr->capacity*2));
+            void** ndat = PARRAY_REALLOC(parr->data, sizeof(parr->data[0])*(parr->capacity*2));
             //check for realloc failure
             if (!ndat) return -1;
             //update allocated capacity
@@ -320,7 +345,7 @@ PADEF int parrayCapacity (struct parray* parr, int cap) {
     }
     if (cap != parr->capacity) {
         //adjust available capacity by reallocation
-        void** ndat = realloc(parr->data, sizeof(parr->data[0])*cap);
+        void** ndat = PARRAY_REALLOC(parr->data, sizeof(parr->data[0])*cap);
         //check for realloc failure
         if (!ndat) return -1;
         //update allocated capacity
@@ -331,4 +356,3 @@ PADEF int parrayCapacity (struct parray* parr, int cap) {
 }
     
 #endif //PARRAY_IMPLEMENTATION
-#endif //PARRAY_H
