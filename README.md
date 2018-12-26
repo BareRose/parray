@@ -9,7 +9,7 @@ The parray library provides a simple general-purpose pointer array data structur
 
 - No hard dependencies besides the standard library, making it fully portable for most purposes
 - Configurable memory allocation function, allowing for compatibility with custom memory managers
-- Usable as a stack, queue, dynamic, array, binary-searchable list, or all of the above at once
+- Usable as a stack, queue, dynamic array, binary-searchable list, or all of the above at once
 - Supports sorting using either its own linear sort or the standard qsort implemenetation
 
 ## Attribution

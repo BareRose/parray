@@ -180,15 +180,12 @@ PADEF int parrayCapacity(struct parray*, int);
 
 //macros
 #ifndef PARRAY_ZALLOC
-    #include <stdlib.h> //calloc
     #define PARRAY_ZALLOC(S) calloc(1, S)
 #endif
 #ifndef PARRAY_REALLOC
-    #include <stdlib.h> //realloc
     #define PARRAY_REALLOC(P, S) realloc(P, S)
 #endif
 #ifndef PARRAY_FREE
-    #include <stdlib.h> //free
     #define PARRAY_FREE(P) free(P)
 #endif
 
